@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ガソリン価格アプリ</title>
+</head>
+<body>
+  <h1>近くのガソリンスタンド</h1>
+  <button onclick="getLocation()">現在地から探す</button>
+  <ul id="list"></ul>
+
+  <script>
+    function getLocation() {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+
+      // 仮データ（あとで本物にする）
+      const stations = [
+        { name: "スタンドA", price: 160 },
+        { name: "スタンドB", price: 155 },
+        { name: "スタンドC", price: 162 }
+      ];
+
+      stations.sort((a,b)=>a.price-b.price);
+
+      stations.forEach(s => {
+        const li = document.createElement("li");
+        li.textContent = s.name + " : " + s.price + "円";
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
