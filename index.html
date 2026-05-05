@@ -10,45 +10,20 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
-  <title>近隣ガソリン最安値</title>
+  <title>近くのGS価格メモ</title>
   <style>
-    :root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #172033;
-      background: #f5f7fb;
-    }
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f5f7fb; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; }
-    header {
-      padding: 24px 18px 22px;
-      background: linear-gradient(135deg, #020617, #1d4ed8);
-      color: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 4px 18px rgba(2, 6, 23, .25);
-    }
-    main { width: min(980px, 100%); margin: 0 auto; padding: 14px; padding-bottom: 90px; }
-    h1 { margin: 0 0 6px; font-size: 25px; }
+    header { padding: 22px 16px; background: linear-gradient(135deg, #020617, #1d4ed8); color: #fff; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 18px rgba(2,6,23,.25); }
+    main { width: min(980px, 100%); margin: 0 auto; padding: 14px; padding-bottom: 98px; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
     h2 { margin: 0 0 12px; font-size: 19px; }
     .heroSub { opacity: .9; font-size: 14px; line-height: 1.6; }
-    .card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 16px;
-      margin: 12px 0;
-      box-shadow: 0 8px 26px rgba(15, 23, 42, .08);
-    }
+    .card { background: #fff; border-radius: 20px; padding: 16px; margin: 12px 0; box-shadow: 0 8px 26px rgba(15,23,42,.08); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .row > * { flex: 1; min-width: 160px; }
-    button, input, select {
-      width: 100%;
-      font-size: 16px;
-      border-radius: 14px;
-      border: 1px solid #d6dbe8;
-      padding: 12px 14px;
-      background: #fff;
-    }
+    .row > * { flex: 1; min-width: 150px; }
+    button, input, select { width: 100%; font-size: 16px; border-radius: 14px; border: 1px solid #d6dbe8; padding: 12px 14px; background: #fff; }
     button { border: 0; background: #2563eb; color: white; cursor: pointer; font-weight: 800; }
     button.secondary { background: #475569; }
     button.green { background: #16a34a; }
@@ -56,329 +31,230 @@
     button:disabled { opacity: .55; cursor: wait; }
     .status { color: #4b5563; line-height: 1.7; font-size: 14px; margin-bottom: 0; }
     .result { display: grid; gap: 10px; }
-    .station {
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
-      padding: 14px;
-      background: #fff;
-    }
+    .station { border: 1px solid #e5e7eb; border-radius: 18px; padding: 14px; background: #fff; }
     .best { border: 2px solid #ef4444; background: linear-gradient(180deg, #fff7ed, #fff); }
     .station-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
     .name { font-size: 18px; font-weight: 900; }
     .price { font-size: 30px; font-weight: 950; color: #dc2626; white-space: nowrap; }
     .small { color: #64748b; font-size: 13px; line-height: 1.65; }
-    .badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
-      font-size: 12px;
-      font-weight: 800;
-      margin-top: 6px;
-      margin-right: 4px;
-    }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; font-weight: 800; margin-top: 6px; margin-right: 4px; }
     .badge.red { background: #fee2e2; color: #991b1b; }
     .badge.green { background: #dcfce7; color: #166534; }
-    .priceBox {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .mini {
-      background: #f8fafc;
-      border-radius: 14px;
-      padding: 10px;
-      text-align: center;
-      border: 1px solid #e5e7eb;
-    }
-    .mini b { display: block; font-size: 18px; }
+    .priceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .priceGrid label { display: grid; gap: 4px; color: #64748b; font-size: 12px; font-weight: 800; }
+    .priceGrid input { text-align: center; font-size: 18px; font-weight: 900; padding: 10px; }
     a { color: #2563eb; font-weight: 800; }
-    code { background: #f3f4f6; padding: 2px 5px; border-radius: 6px; }
-    details summary { cursor: pointer; font-weight: 800; }
-    .bottomBar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid #e5e7eb;
-      padding: 10px 14px max(10px, env(safe-area-inset-bottom));
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      z-index: 20;
-    }
-    @media (max-width: 520px) {
-      header { padding-top: 18px; }
-      h1 { font-size: 22px; }
-      .station-head { display: block; }
-      .price { margin-top: 8px; }
-      .priceBox { grid-template-columns: 1fr; }
-    }
+    .bottomBar { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-top: 1px solid #e5e7eb; padding: 10px 14px max(10px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; z-index: 20; }
+    @media (max-width: 520px) { h1 { font-size: 22px; } .station-head { display: block; } .price { margin-top: 8px; } .priceGrid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>近隣ガソリン最安値</h1>
-    <div class="heroSub">現在地から自動取得 → 最安順に表示。スマホではホーム画面に追加できます。</div>
-  </header>
+<header>
+  <h1>近くのGS価格メモ</h1>
+  <div class="heroSub">近くのGS一覧を自動作成 → 価格を入力 → 最安順で保存表示。PWA対応。</div>
+</header>
 
-  <main>
-    <section class="card">
-      <h2>自動検索</h2>
-      <div class="row">
-        <button id="autoBtn">現在地から最安値取得</button>
-        <button class="green" id="installBtn" hidden>アプリとして追加</button>
-      </div>
-      <p class="status" id="status">APIプロキシURLを設定すると実価格を自動取得します。未設定時は地図検索に切り替わります。</p>
-    </section>
+<main>
+  <section class="card">
+    <h2>近くのGS一覧作成</h2>
+    <div class="row">
+      <button id="searchBtn">現在地からGS一覧作成</button>
+      <button class="green" id="installBtn" hidden>アプリとして追加</button>
+    </div>
+    <p class="status" id="status">現在地を許可すると、OpenStreetMapのデータから近くのガソリンスタンド一覧を作成します。</p>
+  </section>
 
-    <section class="card">
-      <h2>検索条件</h2>
-      <div class="row">
-        <select id="fuelType">
-          <option value="regular">レギュラー</option>
-          <option value="highOctane">ハイオク</option>
-          <option value="diesel">軽油</option>
-        </select>
-        <input id="radius" type="number" min="1" max="20" value="5" inputmode="numeric" placeholder="半径km" />
-        <button class="secondary" id="mapBtn">地図で探す</button>
-      </div>
-      <p class="status">最終取得: <span id="lastUpdated">なし</span></p>
-    </section>
+  <section class="card">
+    <h2>表示設定</h2>
+    <div class="row">
+      <select id="fuelType">
+        <option value="regular">レギュラーで最安順</option>
+        <option value="highOctane">ハイオクで最安順</option>
+        <option value="diesel">軽油で最安順</option>
+      </select>
+      <input id="radius" type="number" min="1" max="20" value="5" inputmode="numeric" placeholder="半径km" />
+      <button class="secondary" id="addBtn">手動でGS追加</button>
+    </div>
+    <p class="status">最終更新: <span id="lastUpdated">なし</span></p>
+  </section>
 
-    <section class="card">
-      <h2>最安ランキング</h2>
-      <div id="results" class="result"><div class="small">まだ検索していません。</div></div>
-    </section>
+  <section class="card">
+    <h2>GS一覧・価格入力</h2>
+    <div id="results" class="result"><div class="small">まだGS一覧を作成していません。</div></div>
+  </section>
+</main>
 
-    <section class="card">
-      <details>
-        <summary>APIプロキシ設定</summary>
-        <p class="status">
-          GitHub PagesではAPIキーを安全に隠せないため、Cloudflare Workers / Vercel Functions等でプロキシを作り、下にURLを入れてください。
-          形式は <code>?lat=緯度&lon=経度&radius=5&fuel=regular</code> を受け取り、JSON配列を返す想定です。
-        </p>
-        <div class="row">
-          <input id="apiUrl" placeholder="例：https://your-worker.example.com/gas" />
-          <button id="saveApiBtn">保存</button>
-          <button class="danger" id="clearApiBtn">削除</button>
-        </div>
-        <p class="status">
-          返却例: <code>[{"name":"GS名","regular":165,"highOctane":176,"diesel":145,"address":"住所","checkedAt":"2026-05-05"}]</code>
-        </p>
-      </details>
-    </section>
-  </main>
-
-  <div class="bottomBar">
-    <button id="reloadBtn">再取得</button>
-    <button class="secondary" id="nearMapBtn">近くのGS</button>
-  </div>
+<div class="bottomBar">
+  <button id="saveBtn">価格を保存/並替</button>
+  <button class="secondary" id="nearMapBtn">地図で開く</button>
+</div>
 
 <script>
-const APP_VERSION = "2026.05.05-pwa-auto";
+const APP_VERSION = "2026.05.05-gs-list-price-memo";
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 const lastUpdatedEl = document.getElementById("lastUpdated");
-const autoBtn = document.getElementById("autoBtn");
-const reloadBtn = document.getElementById("reloadBtn");
-const mapBtn = document.getElementById("mapBtn");
+const searchBtn = document.getElementById("searchBtn");
+const saveBtn = document.getElementById("saveBtn");
+const addBtn = document.getElementById("addBtn");
 const nearMapBtn = document.getElementById("nearMapBtn");
 const fuelTypeEl = document.getElementById("fuelType");
 const radiusEl = document.getElementById("radius");
-const apiUrlEl = document.getElementById("apiUrl");
-const saveApiBtn = document.getElementById("saveApiBtn");
-const clearApiBtn = document.getElementById("clearApiBtn");
 const installBtn = document.getElementById("installBtn");
+let stations = JSON.parse(localStorage.getItem("stations") || "[]");
 let lastPosition = JSON.parse(localStorage.getItem("lastPosition") || "null");
 let deferredInstallPrompt = null;
 
-apiUrlEl.value = localStorage.getItem("gasApiProxyUrl") || "";
 fuelTypeEl.value = localStorage.getItem("fuelType") || "regular";
 radiusEl.value = localStorage.getItem("radiusKm") || "5";
-restoreLastResults();
+lastUpdatedEl.textContent = localStorage.getItem("lastUpdated") || "なし";
+renderStations();
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
-}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstallPrompt = e; installBtn.hidden = false; });
+installBtn.addEventListener("click", async () => { if (!deferredInstallPrompt) return; deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; installBtn.hidden = true; deferredInstallPrompt = null; });
 
-window.addEventListener("beforeinstallprompt", event => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  installBtn.hidden = false;
-});
-
-installBtn.addEventListener("click", async () => {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  installBtn.hidden = true;
-});
-
-autoBtn.addEventListener("click", acquireAndRender);
-reloadBtn.addEventListener("click", () => lastPosition ? renderNearby(lastPosition.lat, lastPosition.lon) : acquireAndRender());
-mapBtn.addEventListener("click", () => openMapSearch("現在地周辺 ガソリンスタンド"));
+searchBtn.addEventListener("click", getLocationAndBuildList);
+saveBtn.addEventListener("click", savePricesAndSort);
+addBtn.addEventListener("click", addManualStation);
 nearMapBtn.addEventListener("click", () => {
-  if (lastPosition) openMapSearch(`${lastPosition.lat},${lastPosition.lon} 近くのガソリンスタンド`);
+  if (lastPosition) openMapSearch(`${lastPosition.lat},${lastPosition.lon} ガソリンスタンド`);
   else openMapSearch("近くのガソリンスタンド");
 });
-
-saveApiBtn.addEventListener("click", () => {
-  localStorage.setItem("gasApiProxyUrl", apiUrlEl.value.trim());
-  statusEl.textContent = "APIプロキシURLを保存しました。次回検索から実価格取得を試します。";
-});
-
-clearApiBtn.addEventListener("click", () => {
-  localStorage.removeItem("gasApiProxyUrl");
-  apiUrlEl.value = "";
-  statusEl.textContent = "APIプロキシURLを削除しました。地図検索モードに戻ります。";
-});
-
-fuelTypeEl.addEventListener("change", () => {
-  localStorage.setItem("fuelType", fuelTypeEl.value);
-  const cached = JSON.parse(localStorage.getItem("lastGasResults") || "[]");
-  if (cached.length) renderResults(cached, true);
-});
-
+fuelTypeEl.addEventListener("change", () => { localStorage.setItem("fuelType", fuelTypeEl.value); savePricesAndSort(false); });
 radiusEl.addEventListener("change", () => localStorage.setItem("radiusKm", radiusEl.value || "5"));
 
-async function acquireAndRender() {
-  if (!navigator.geolocation) {
-    statusEl.textContent = "このブラウザでは現在地取得が使えません。";
-    return;
-  }
-  setBusy(true, "現在地を取得しています。ブラウザの位置情報を許可してください。");
+function getLocationAndBuildList() {
+  if (!navigator.geolocation) { statusEl.textContent = "このブラウザでは現在地取得が使えません。"; return; }
+  setBusy(true, "現在地を取得しています。位置情報を許可してください。");
   navigator.geolocation.getCurrentPosition(async pos => {
     lastPosition = { lat: pos.coords.latitude, lon: pos.coords.longitude };
     localStorage.setItem("lastPosition", JSON.stringify(lastPosition));
-    await renderNearby(lastPosition.lat, lastPosition.lon);
+    await buildNearbyStationList(lastPosition.lat, lastPosition.lon);
     setBusy(false);
-  }, () => {
-    setBusy(false, "現在地取得が許可されませんでした。スマホの位置情報設定を確認してください。");
-  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  }, () => setBusy(false, "現在地取得が許可されませんでした。手動追加を使ってください。"), { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
 }
 
-async function renderNearby(lat, lon) {
-  const radius = Number(radiusEl.value || 5);
-  const fuel = fuelTypeEl.value;
-  setBusy(true, `現在地 ${lat.toFixed(5)}, ${lon.toFixed(5)} / 半径${radius}kmで価格取得中です。`);
-  try {
-    const stations = await fetchGasPrices(lat, lon, radius, fuel);
-    if (stations.length) {
-      localStorage.setItem("lastGasResults", JSON.stringify(stations));
-      localStorage.setItem("lastUpdated", new Date().toLocaleString("ja-JP"));
-      renderResults(stations, false);
-      statusEl.textContent = `取得完了。${stations.length}件を最安順に表示しています。`;
-    } else {
-      renderFallback(lat, lon);
-      statusEl.textContent = "価格APIが未設定、または価格データがありません。地図検索に切り替えました。";
-    }
-  } catch (err) {
-    renderFallback(lat, lon);
-    statusEl.textContent = "価格取得に失敗しました。APIプロキシURL/CORS/キー設定を確認してください。";
-  } finally {
-    setBusy(false);
-  }
+async function buildNearbyStationList(lat, lon) {
+  const radiusMeter = Math.max(1, Math.min(20, Number(radiusEl.value || 5))) * 1000;
+  statusEl.textContent = `半径${radiusMeter / 1000}kmのGS一覧を作成中です。`;
+  const query = `[out:json][timeout:25];(node["amenity"="fuel"](around:${radiusMeter},${lat},${lon});way["amenity"="fuel"](around:${radiusMeter},${lat},${lon});relation["amenity"="fuel"](around:${radiusMeter},${lat},${lon}););out center tags;`;
+  const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: query });
+  if (!res.ok) throw new Error("Overpass API error");
+  const data = await res.json();
+  const oldMap = new Map(stations.map(s => [s.id, s]));
+  const list = (data.elements || []).map(e => {
+    const pLat = e.lat ?? e.center?.lat;
+    const pLon = e.lon ?? e.center?.lon;
+    const id = `${e.type}-${e.id}`;
+    const old = oldMap.get(id) || {};
+    return {
+      id,
+      name: e.tags?.name || e.tags?.brand || "名称未登録GS",
+      brand: e.tags?.brand || e.tags?.operator || "GS",
+      address: buildAddress(e.tags),
+      lat: pLat,
+      lon: pLon,
+      distance: calcDistanceKm(lat, lon, pLat, pLon),
+      regular: old.regular || "",
+      highOctane: old.highOctane || "",
+      diesel: old.diesel || "",
+      memo: old.memo || ""
+    };
+  }).filter(s => Number.isFinite(s.distance));
+
+  stations = mergeManualStations(list, stations).sort((a,b) => a.distance - b.distance);
+  persistStations();
+  renderStations();
+  statusEl.textContent = `${stations.length}件のGS一覧を作成しました。価格を入力して「価格を保存/並替」を押してください。`;
 }
 
-function renderResults(stations, fromCache) {
+function mergeManualStations(apiList, oldList) {
+  const ids = new Set(apiList.map(s => s.id));
+  const manual = oldList.filter(s => String(s.id).startsWith("manual-") && !ids.has(s.id));
+  return [...apiList, ...manual];
+}
+
+function addManualStation() {
+  const name = prompt("GS名を入力してください");
+  if (!name) return;
+  stations.push({ id: "manual-" + Date.now(), name, brand: "手動追加", address: "", lat: null, lon: null, distance: 9999, regular: "", highOctane: "", diesel: "", memo: "" });
+  persistStations();
+  renderStations();
+}
+
+function renderStations() {
+  if (!stations.length) { resultsEl.innerHTML = '<div class="small">まだGS一覧を作成していません。</div>'; return; }
   const fuel = fuelTypeEl.value;
-  const label = fuel === "regular" ? "レギュラー" : fuel === "highOctane" ? "ハイオク" : "軽油";
-  const sorted = [...stations].sort((a, b) => Number(a[fuel] ?? 9999) - Number(b[fuel] ?? 9999));
+  const sorted = [...stations].sort((a,b) => priceSortValue(a[fuel]) - priceSortValue(b[fuel]) || Number(a.distance ?? 9999) - Number(b.distance ?? 9999));
   resultsEl.innerHTML = "";
-  sorted.forEach((s, i) => addStationCard(s, i, fuel, label));
-  lastUpdatedEl.textContent = localStorage.getItem("lastUpdated") || (fromCache ? "保存データ" : "今") ;
+  sorted.forEach((s, index) => addStationCard(s, index, fuel));
 }
 
-function addStationCard(s, index, fuel, label) {
+function addStationCard(s, index, fuel) {
+  const hasPrice = s[fuel] !== "" && s[fuel] != null;
   const div = document.createElement("div");
-  div.className = "station" + (index === 0 ? " best" : "");
-  const price = s[fuel] ?? s.regular ?? "-";
-  const mapUrl = s.mapUrl || `https://www.google.com/maps/search/${encodeURIComponent((s.name || "") + " " + (s.address || ""))}`;
+  div.className = "station" + (hasPrice && index === 0 ? " best" : "");
+  div.dataset.id = s.id;
+  const mapUrl = s.lat && s.lon ? `https://www.google.com/maps/search/${encodeURIComponent(s.lat + "," + s.lon)}` : `https://www.google.com/maps/search/${encodeURIComponent(s.name + " ガソリンスタンド")}`;
   div.innerHTML = `
     <div class="station-head">
       <div>
-        <div class="name">${index === 0 ? "🏆 " : ""}${escapeHtml(s.name || "名称不明")}</div>
-        <div class="small">${escapeHtml(s.address || "住所不明")}</div>
-        <span class="badge ${index === 0 ? "red" : ""}">${index === 0 ? "最安" : (index + 1) + "位"}</span>
+        <div class="name">${hasPrice && index === 0 ? "🏆 " : ""}${escapeHtml(s.name)}</div>
+        <div class="small">${escapeHtml(s.address || "住所情報なし")} ${s.distance && s.distance < 9999 ? " / 約" + s.distance.toFixed(2) + "km" : ""}</div>
+        <span class="badge ${hasPrice && index === 0 ? "red" : ""}">${hasPrice ? (index + 1) + "位" : "価格未入力"}</span>
         <span class="badge green">${escapeHtml(s.brand || "GS")}</span>
       </div>
-      <div class="price">${escapeHtml(price)} 円/L</div>
+      <div class="price">${hasPrice ? escapeHtml(s[fuel]) : "--"} 円/L</div>
     </div>
-    <div class="priceBox">
-      <div class="mini"><span class="small">レギュラー</span><b>${escapeHtml(s.regular ?? "-")}</b></div>
-      <div class="mini"><span class="small">ハイオク</span><b>${escapeHtml(s.highOctane ?? "-")}</b></div>
-      <div class="mini"><span class="small">軽油</span><b>${escapeHtml(s.diesel ?? "-")}</b></div>
+    <div class="priceGrid">
+      <label>レギュラー<input data-field="regular" type="number" inputmode="numeric" value="${escapeHtml(s.regular || "")}" placeholder="例 165"></label>
+      <label>ハイオク<input data-field="highOctane" type="number" inputmode="numeric" value="${escapeHtml(s.highOctane || "")}" placeholder="例 176"></label>
+      <label>軽油<input data-field="diesel" type="number" inputmode="numeric" value="${escapeHtml(s.diesel || "")}" placeholder="例 145"></label>
     </div>
-    <p class="small">表示基準: ${label} / 確認日: ${escapeHtml(s.checkedAt || "不明")}</p>
-    <p><a href="${mapUrl}" target="_blank" rel="noopener">このGSを地図で開く</a></p>`;
+    <p><a href="${mapUrl}" target="_blank" rel="noopener">地図で開く</a></p>`;
   resultsEl.appendChild(div);
 }
 
-function renderFallback(lat, lon) {
-  const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(lat + "," + lon + " 近くのガソリンスタンド")}`;
-  resultsEl.innerHTML = `
-    <div class="station best">
-      <div class="station-head">
-        <div>
-          <div class="name">近隣ガソリンスタンド検索</div>
-          <div class="small">APIプロキシURL未設定のため、実価格の自動取得はまだ行っていません。</div>
-          <span class="badge red">設定待ち</span>
-        </div>
-        <div class="price">-- 円/L</div>
-      </div>
-      <p><a href="${mapUrl}" target="_blank" rel="noopener">Googleマップで近くのGSを開く</a></p>
-      <p><a href="https://www.gogo.gs/" target="_blank" rel="noopener">gogo.gsで価格を確認する</a></p>
-    </div>`;
+function savePricesAndSort(showMessage = true) {
+  document.querySelectorAll(".station").forEach(card => {
+    const id = card.dataset.id;
+    const s = stations.find(x => x.id === id);
+    if (!s) return;
+    card.querySelectorAll("input[data-field]").forEach(input => { s[input.dataset.field] = input.value.trim(); });
+  });
+  persistStations();
+  renderStations();
+  if (showMessage) statusEl.textContent = "価格を保存し、選択中の油種で最安順に並べ替えました。";
 }
 
-async function fetchGasPrices(lat, lon, radius, fuel) {
-  const endpoint = (localStorage.getItem("gasApiProxyUrl") || "").trim();
-  if (!endpoint) return [];
-  const url = new URL(endpoint);
-  url.searchParams.set("lat", lat);
-  url.searchParams.set("lon", lon);
-  url.searchParams.set("radius", radius);
-  url.searchParams.set("fuel", fuel);
-  const res = await fetch(url.toString(), { cache: "no-store" });
-  if (!res.ok) throw new Error("API error");
-  const data = await res.json();
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data.stations)) return data.stations;
-  if (Array.isArray(data.results)) return data.results;
-  return [];
+function persistStations() {
+  localStorage.setItem("stations", JSON.stringify(stations));
+  const now = new Date().toLocaleString("ja-JP");
+  localStorage.setItem("lastUpdated", now);
+  lastUpdatedEl.textContent = now;
 }
 
-function restoreLastResults() {
-  const updated = localStorage.getItem("lastUpdated");
-  if (updated) lastUpdatedEl.textContent = updated;
-  const cached = JSON.parse(localStorage.getItem("lastGasResults") || "[]");
-  if (cached.length) {
-    renderResults(cached, true);
-    statusEl.textContent = "前回取得した価格データを表示しています。再取得で最新化できます。";
-  }
+function buildAddress(tags = {}) {
+  return [tags["addr:province"], tags["addr:city"], tags["addr:suburb"], tags["addr:neighbourhood"], tags["addr:street"], tags["addr:housenumber"]].filter(Boolean).join("") || tags["addr:full"] || "";
 }
 
-function setBusy(isBusy, message) {
-  autoBtn.disabled = isBusy;
-  reloadBtn.disabled = isBusy;
-  if (message) statusEl.textContent = message;
+function priceSortValue(v) {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : 99999;
 }
 
-function openMapSearch(query) {
-  window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, "_blank");
+function calcDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[c]));
-}
+function toRad(v) { return v * Math.PI / 180; }
+function setBusy(isBusy, message) { searchBtn.disabled = isBusy; saveBtn.disabled = isBusy; if (message) statusEl.textContent = message; }
+function openMapSearch(query) { window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, "_blank"); }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c])); }
 </script>
 </body>
 </html>
