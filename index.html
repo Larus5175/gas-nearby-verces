@@ -2,8 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>近隣ガソリン単価検索</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ガソリン最安" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <title>近隣ガソリン最安値</title>
   <style>
     :root {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -11,71 +18,55 @@
       background: #f5f7fb;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; }
+    body { margin: 0; min-height: 100vh; }
     header {
-      padding: 24px 18px;
-      background: linear-gradient(135deg, #111827, #1f3b7a);
+      padding: 24px 18px 22px;
+      background: linear-gradient(135deg, #020617, #1d4ed8);
       color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 4px 18px rgba(2, 6, 23, .25);
     }
-    main {
-      width: min(960px, 100%);
-      margin: 0 auto;
-      padding: 18px;
-    }
-    h1 { margin: 0 0 6px; font-size: 26px; }
-    h2 { margin: 0 0 12px; font-size: 20px; }
+    main { width: min(980px, 100%); margin: 0 auto; padding: 14px; padding-bottom: 90px; }
+    h1 { margin: 0 0 6px; font-size: 25px; }
+    h2 { margin: 0 0 12px; font-size: 19px; }
+    .heroSub { opacity: .9; font-size: 14px; line-height: 1.6; }
     .card {
       background: #fff;
-      border-radius: 18px;
-      padding: 18px;
-      margin: 14px 0;
+      border-radius: 20px;
+      padding: 16px;
+      margin: 12px 0;
       box-shadow: 0 8px 26px rgba(15, 23, 42, .08);
     }
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .row > * { flex: 1; min-width: 170px; }
-    button, input {
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1; min-width: 160px; }
+    button, input, select {
       width: 100%;
       font-size: 16px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid #d6dbe8;
       padding: 12px 14px;
+      background: #fff;
     }
-    button {
-      border: 0;
-      background: #2563eb;
-      color: white;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    button.secondary { background: #4b5563; }
+    button { border: 0; background: #2563eb; color: white; cursor: pointer; font-weight: 800; }
+    button.secondary { background: #475569; }
+    button.green { background: #16a34a; }
+    button.danger { background: #dc2626; }
     button:disabled { opacity: .55; cursor: wait; }
-    .status {
-      color: #4b5563;
-      line-height: 1.7;
-      font-size: 14px;
-      margin-bottom: 0;
-    }
+    .status { color: #4b5563; line-height: 1.7; font-size: 14px; margin-bottom: 0; }
     .result { display: grid; gap: 10px; }
     .station {
       border: 1px solid #e5e7eb;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 14px;
       background: #fff;
     }
-    .station-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .name { font-size: 18px; font-weight: 800; }
-    .price { font-size: 28px; font-weight: 900; color: #dc2626; white-space: nowrap; }
-    .small { color: #6b7280; font-size: 13px; line-height: 1.6; }
+    .best { border: 2px solid #ef4444; background: linear-gradient(180deg, #fff7ed, #fff); }
+    .station-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .name { font-size: 18px; font-weight: 900; }
+    .price { font-size: 30px; font-weight: 950; color: #dc2626; white-space: nowrap; }
+    .small { color: #64748b; font-size: 13px; line-height: 1.65; }
     .badge {
       display: inline-block;
       padding: 4px 8px;
@@ -83,140 +74,304 @@
       background: #eef2ff;
       color: #3730a3;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       margin-top: 6px;
+      margin-right: 4px;
     }
-    a { color: #2563eb; font-weight: 700; }
-    code {
-      background: #f3f4f6;
-      padding: 2px 5px;
-      border-radius: 6px;
+    .badge.red { background: #fee2e2; color: #991b1b; }
+    .badge.green { background: #dcfce7; color: #166534; }
+    .priceBox {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .mini {
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #e5e7eb;
+    }
+    .mini b { display: block; font-size: 18px; }
+    a { color: #2563eb; font-weight: 800; }
+    code { background: #f3f4f6; padding: 2px 5px; border-radius: 6px; }
+    details summary { cursor: pointer; font-weight: 800; }
+    .bottomBar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #e5e7eb;
+      padding: 10px 14px max(10px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      z-index: 20;
+    }
+    @media (max-width: 520px) {
+      header { padding-top: 18px; }
+      h1 { font-size: 22px; }
+      .station-head { display: block; }
+      .price { margin-top: 8px; }
+      .priceBox { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>近隣ガソリン単価検索</h1>
-    <div>現在地から近いガソリンスタンドを探し、API設定時は単価も表示します。</div>
+    <h1>近隣ガソリン最安値</h1>
+    <div class="heroSub">現在地から自動取得 → 最安順に表示。スマホではホーム画面に追加できます。</div>
   </header>
 
   <main>
     <section class="card">
+      <h2>自動検索</h2>
       <div class="row">
-        <button id="locBtn">現在地から検索</button>
-        <input id="keyword" placeholder="例：佐賀駅、福岡市博多区" />
-        <button class="secondary" id="mapBtn">地図で検索</button>
+        <button id="autoBtn">現在地から最安値取得</button>
+        <button class="green" id="installBtn" hidden>アプリとして追加</button>
       </div>
-      <p class="status" id="status">
-        まずは現在地検索を押してください。価格API未設定の場合は、近隣GSの地図検索と価格サイトへの導線を表示します。
-      </p>
+      <p class="status" id="status">APIプロキシURLを設定すると実価格を自動取得します。未設定時は地図検索に切り替わります。</p>
     </section>
 
     <section class="card">
-      <h2>検索結果</h2>
-      <div id="results" class="result">
-        <div class="small">まだ検索していません。</div>
+      <h2>検索条件</h2>
+      <div class="row">
+        <select id="fuelType">
+          <option value="regular">レギュラー</option>
+          <option value="highOctane">ハイオク</option>
+          <option value="diesel">軽油</option>
+        </select>
+        <input id="radius" type="number" min="1" max="20" value="5" inputmode="numeric" placeholder="半径km" />
+        <button class="secondary" id="mapBtn">地図で探す</button>
       </div>
+      <p class="status">最終取得: <span id="lastUpdated">なし</span></p>
     </section>
 
     <section class="card">
-      <h2>実価格取得について</h2>
-      <p class="status">
-        ガソリン価格は公開ブラウザJSだけで安定取得できる公式無料APIが限られます。
-        gogo.gs等のAPIを利用する場合は、APIキーをGitHub Pagesに直書きせず、Cloudflare Workers / Vercel Functions等のプロキシ経由にしてください。
-        このHTML内の <code>fetchGasPrices()</code> を差し替えると、実価格表示に切り替えできます。
-      </p>
+      <h2>最安ランキング</h2>
+      <div id="results" class="result"><div class="small">まだ検索していません。</div></div>
+    </section>
+
+    <section class="card">
+      <details>
+        <summary>APIプロキシ設定</summary>
+        <p class="status">
+          GitHub PagesではAPIキーを安全に隠せないため、Cloudflare Workers / Vercel Functions等でプロキシを作り、下にURLを入れてください。
+          形式は <code>?lat=緯度&lon=経度&radius=5&fuel=regular</code> を受け取り、JSON配列を返す想定です。
+        </p>
+        <div class="row">
+          <input id="apiUrl" placeholder="例：https://your-worker.example.com/gas" />
+          <button id="saveApiBtn">保存</button>
+          <button class="danger" id="clearApiBtn">削除</button>
+        </div>
+        <p class="status">
+          返却例: <code>[{"name":"GS名","regular":165,"highOctane":176,"diesel":145,"address":"住所","checkedAt":"2026-05-05"}]</code>
+        </p>
+      </details>
     </section>
   </main>
 
+  <div class="bottomBar">
+    <button id="reloadBtn">再取得</button>
+    <button class="secondary" id="nearMapBtn">近くのGS</button>
+  </div>
+
 <script>
+const APP_VERSION = "2026.05.05-pwa-auto";
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
-const locBtn = document.getElementById("locBtn");
+const lastUpdatedEl = document.getElementById("lastUpdated");
+const autoBtn = document.getElementById("autoBtn");
+const reloadBtn = document.getElementById("reloadBtn");
 const mapBtn = document.getElementById("mapBtn");
+const nearMapBtn = document.getElementById("nearMapBtn");
+const fuelTypeEl = document.getElementById("fuelType");
+const radiusEl = document.getElementById("radius");
+const apiUrlEl = document.getElementById("apiUrl");
+const saveApiBtn = document.getElementById("saveApiBtn");
+const clearApiBtn = document.getElementById("clearApiBtn");
+const installBtn = document.getElementById("installBtn");
+let lastPosition = JSON.parse(localStorage.getItem("lastPosition") || "null");
+let deferredInstallPrompt = null;
 
-locBtn.addEventListener("click", () => {
+apiUrlEl.value = localStorage.getItem("gasApiProxyUrl") || "";
+fuelTypeEl.value = localStorage.getItem("fuelType") || "regular";
+radiusEl.value = localStorage.getItem("radiusKm") || "5";
+restoreLastResults();
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installBtn.hidden = false;
+});
+
+installBtn.addEventListener("click", async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  installBtn.hidden = true;
+});
+
+autoBtn.addEventListener("click", acquireAndRender);
+reloadBtn.addEventListener("click", () => lastPosition ? renderNearby(lastPosition.lat, lastPosition.lon) : acquireAndRender());
+mapBtn.addEventListener("click", () => openMapSearch("現在地周辺 ガソリンスタンド"));
+nearMapBtn.addEventListener("click", () => {
+  if (lastPosition) openMapSearch(`${lastPosition.lat},${lastPosition.lon} 近くのガソリンスタンド`);
+  else openMapSearch("近くのガソリンスタンド");
+});
+
+saveApiBtn.addEventListener("click", () => {
+  localStorage.setItem("gasApiProxyUrl", apiUrlEl.value.trim());
+  statusEl.textContent = "APIプロキシURLを保存しました。次回検索から実価格取得を試します。";
+});
+
+clearApiBtn.addEventListener("click", () => {
+  localStorage.removeItem("gasApiProxyUrl");
+  apiUrlEl.value = "";
+  statusEl.textContent = "APIプロキシURLを削除しました。地図検索モードに戻ります。";
+});
+
+fuelTypeEl.addEventListener("change", () => {
+  localStorage.setItem("fuelType", fuelTypeEl.value);
+  const cached = JSON.parse(localStorage.getItem("lastGasResults") || "[]");
+  if (cached.length) renderResults(cached, true);
+});
+
+radiusEl.addEventListener("change", () => localStorage.setItem("radiusKm", radiusEl.value || "5"));
+
+async function acquireAndRender() {
   if (!navigator.geolocation) {
-    statusEl.textContent = "このブラウザでは現在地取得が使えません。地名検索を使ってください。";
+    statusEl.textContent = "このブラウザでは現在地取得が使えません。";
     return;
   }
-
-  locBtn.disabled = true;
-  statusEl.textContent = "現在地を取得中です。ブラウザの位置情報を許可してください。";
-
+  setBusy(true, "現在地を取得しています。ブラウザの位置情報を許可してください。");
   navigator.geolocation.getCurrentPosition(async pos => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-    statusEl.textContent = `現在地: ${lat.toFixed(5)}, ${lon.toFixed(5)}。近隣情報を検索しています。`;
-    await renderNearby(lat, lon);
-    locBtn.disabled = false;
+    lastPosition = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    localStorage.setItem("lastPosition", JSON.stringify(lastPosition));
+    await renderNearby(lastPosition.lat, lastPosition.lon);
+    setBusy(false);
   }, () => {
-    statusEl.textContent = "現在地取得が許可されませんでした。地名を入力して地図で検索してください。";
-    locBtn.disabled = false;
-  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
-});
-
-mapBtn.addEventListener("click", () => {
-  const q = document.getElementById("keyword").value.trim() || "近くのガソリンスタンド";
-  openMapSearch(q + " ガソリンスタンド");
-});
+    setBusy(false, "現在地取得が許可されませんでした。スマホの位置情報設定を確認してください。");
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
 
 async function renderNearby(lat, lon) {
-  resultsEl.innerHTML = "";
-
-  const prices = await fetchGasPrices(lat, lon);
-  if (prices && prices.length > 0) {
-    prices.sort((a, b) => Number(a.regular ?? 9999) - Number(b.regular ?? 9999));
-    prices.forEach(s => addStationCard(s));
-    return;
+  const radius = Number(radiusEl.value || 5);
+  const fuel = fuelTypeEl.value;
+  setBusy(true, `現在地 ${lat.toFixed(5)}, ${lon.toFixed(5)} / 半径${radius}kmで価格取得中です。`);
+  try {
+    const stations = await fetchGasPrices(lat, lon, radius, fuel);
+    if (stations.length) {
+      localStorage.setItem("lastGasResults", JSON.stringify(stations));
+      localStorage.setItem("lastUpdated", new Date().toLocaleString("ja-JP"));
+      renderResults(stations, false);
+      statusEl.textContent = `取得完了。${stations.length}件を最安順に表示しています。`;
+    } else {
+      renderFallback(lat, lon);
+      statusEl.textContent = "価格APIが未設定、または価格データがありません。地図検索に切り替えました。";
+    }
+  } catch (err) {
+    renderFallback(lat, lon);
+    statusEl.textContent = "価格取得に失敗しました。APIプロキシURL/CORS/キー設定を確認してください。";
+  } finally {
+    setBusy(false);
   }
+}
 
+function renderResults(stations, fromCache) {
+  const fuel = fuelTypeEl.value;
+  const label = fuel === "regular" ? "レギュラー" : fuel === "highOctane" ? "ハイオク" : "軽油";
+  const sorted = [...stations].sort((a, b) => Number(a[fuel] ?? 9999) - Number(b[fuel] ?? 9999));
+  resultsEl.innerHTML = "";
+  sorted.forEach((s, i) => addStationCard(s, i, fuel, label));
+  lastUpdatedEl.textContent = localStorage.getItem("lastUpdated") || (fromCache ? "保存データ" : "今") ;
+}
+
+function addStationCard(s, index, fuel, label) {
+  const div = document.createElement("div");
+  div.className = "station" + (index === 0 ? " best" : "");
+  const price = s[fuel] ?? s.regular ?? "-";
+  const mapUrl = s.mapUrl || `https://www.google.com/maps/search/${encodeURIComponent((s.name || "") + " " + (s.address || ""))}`;
+  div.innerHTML = `
+    <div class="station-head">
+      <div>
+        <div class="name">${index === 0 ? "🏆 " : ""}${escapeHtml(s.name || "名称不明")}</div>
+        <div class="small">${escapeHtml(s.address || "住所不明")}</div>
+        <span class="badge ${index === 0 ? "red" : ""}">${index === 0 ? "最安" : (index + 1) + "位"}</span>
+        <span class="badge green">${escapeHtml(s.brand || "GS")}</span>
+      </div>
+      <div class="price">${escapeHtml(price)} 円/L</div>
+    </div>
+    <div class="priceBox">
+      <div class="mini"><span class="small">レギュラー</span><b>${escapeHtml(s.regular ?? "-")}</b></div>
+      <div class="mini"><span class="small">ハイオク</span><b>${escapeHtml(s.highOctane ?? "-")}</b></div>
+      <div class="mini"><span class="small">軽油</span><b>${escapeHtml(s.diesel ?? "-")}</b></div>
+    </div>
+    <p class="small">表示基準: ${label} / 確認日: ${escapeHtml(s.checkedAt || "不明")}</p>
+    <p><a href="${mapUrl}" target="_blank" rel="noopener">このGSを地図で開く</a></p>`;
+  resultsEl.appendChild(div);
+}
+
+function renderFallback(lat, lon) {
   const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(lat + "," + lon + " 近くのガソリンスタンド")}`;
-  const gogoUrl = "https://www.gogo.gs/";
-
   resultsEl.innerHTML = `
-    <div class="station">
+    <div class="station best">
       <div class="station-head">
         <div>
           <div class="name">近隣ガソリンスタンド検索</div>
-          <div class="small">価格API未設定のため、地図検索と価格サイトへのリンクを表示しています。</div>
-          <span class="badge">現在地連動</span>
+          <div class="small">APIプロキシURL未設定のため、実価格の自動取得はまだ行っていません。</div>
+          <span class="badge red">設定待ち</span>
         </div>
         <div class="price">-- 円/L</div>
       </div>
       <p><a href="${mapUrl}" target="_blank" rel="noopener">Googleマップで近くのGSを開く</a></p>
-      <p><a href="${gogoUrl}" target="_blank" rel="noopener">gogo.gsで価格を確認する</a></p>
+      <p><a href="https://www.gogo.gs/" target="_blank" rel="noopener">gogo.gsで価格を確認する</a></p>
     </div>`;
 }
 
-function addStationCard(s) {
-  const div = document.createElement("div");
-  div.className = "station";
-  div.innerHTML = `
-    <div class="station-head">
-      <div>
-        <div class="name">${escapeHtml(s.name || "名称不明")}</div>
-        <div class="small">${escapeHtml(s.address || "住所不明")}</div>
-        <span class="badge">${escapeHtml(s.brand || "GS")}</span>
-      </div>
-      <div class="price">${escapeHtml(s.regular ?? "-")} 円/L</div>
-    </div>
-    <div class="small">確認日: ${escapeHtml(s.checkedAt || "不明")}</div>`;
-  resultsEl.appendChild(div);
+async function fetchGasPrices(lat, lon, radius, fuel) {
+  const endpoint = (localStorage.getItem("gasApiProxyUrl") || "").trim();
+  if (!endpoint) return [];
+  const url = new URL(endpoint);
+  url.searchParams.set("lat", lat);
+  url.searchParams.set("lon", lon);
+  url.searchParams.set("radius", radius);
+  url.searchParams.set("fuel", fuel);
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) throw new Error("API error");
+  const data = await res.json();
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.stations)) return data.stations;
+  if (Array.isArray(data.results)) return data.results;
+  return [];
+}
+
+function restoreLastResults() {
+  const updated = localStorage.getItem("lastUpdated");
+  if (updated) lastUpdatedEl.textContent = updated;
+  const cached = JSON.parse(localStorage.getItem("lastGasResults") || "[]");
+  if (cached.length) {
+    renderResults(cached, true);
+    statusEl.textContent = "前回取得した価格データを表示しています。再取得で最新化できます。";
+  }
+}
+
+function setBusy(isBusy, message) {
+  autoBtn.disabled = isBusy;
+  reloadBtn.disabled = isBusy;
+  if (message) statusEl.textContent = message;
 }
 
 function openMapSearch(query) {
   window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, "_blank");
-}
-
-// 実価格APIを使う場合はここを差し替えます。
-// 重要: APIキーをこのファイルに直接書かないでください。
-async function fetchGasPrices(lat, lon) {
-  // 例:
-  // const res = await fetch(`https://your-worker.example.com/gas?lat=${lat}&lon=${lon}`);
-  // if (!res.ok) return [];
-  // return await res.json();
-  return [];
 }
 
 function escapeHtml(value) {
