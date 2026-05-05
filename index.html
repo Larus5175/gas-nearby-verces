@@ -1,41 +1,229 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>ガソリン価格アプリ</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>近隣ガソリン単価検索</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f5f7fb;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header {
+      padding: 24px 18px;
+      background: linear-gradient(135deg, #111827, #1f3b7a);
+      color: #fff;
+    }
+    main {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+    h1 { margin: 0 0 6px; font-size: 26px; }
+    h2 { margin: 0 0 12px; font-size: 20px; }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      margin: 14px 0;
+      box-shadow: 0 8px 26px rgba(15, 23, 42, .08);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .row > * { flex: 1; min-width: 170px; }
+    button, input {
+      width: 100%;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #d6dbe8;
+      padding: 12px 14px;
+    }
+    button {
+      border: 0;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.secondary { background: #4b5563; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .status {
+      color: #4b5563;
+      line-height: 1.7;
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+    .result { display: grid; gap: 10px; }
+    .station {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+    .station-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .name { font-size: 18px; font-weight: 800; }
+    .price { font-size: 28px; font-weight: 900; color: #dc2626; white-space: nowrap; }
+    .small { color: #6b7280; font-size: 13px; line-height: 1.6; }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    a { color: #2563eb; font-weight: 700; }
+    code {
+      background: #f3f4f6;
+      padding: 2px 5px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
-  <h1>近くのガソリンスタンド</h1>
-  <button onclick="getLocation()">現在地から探す</button>
-  <ul id="list"></ul>
+  <header>
+    <h1>近隣ガソリン単価検索</h1>
+    <div>現在地から近いガソリンスタンドを探し、API設定時は単価も表示します。</div>
+  </header>
 
-  <script>
-    function getLocation() {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    }
+  <main>
+    <section class="card">
+      <div class="row">
+        <button id="locBtn">現在地から検索</button>
+        <input id="keyword" placeholder="例：佐賀駅、福岡市博多区" />
+        <button class="secondary" id="mapBtn">地図で検索</button>
+      </div>
+      <p class="status" id="status">
+        まずは現在地検索を押してください。価格API未設定の場合は、近隣GSの地図検索と価格サイトへの導線を表示します。
+      </p>
+    </section>
 
-    function showPosition(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+    <section class="card">
+      <h2>検索結果</h2>
+      <div id="results" class="result">
+        <div class="small">まだ検索していません。</div>
+      </div>
+    </section>
 
-      const list = document.getElementById("list");
-      list.innerHTML = "";
+    <section class="card">
+      <h2>実価格取得について</h2>
+      <p class="status">
+        ガソリン価格は公開ブラウザJSだけで安定取得できる公式無料APIが限られます。
+        gogo.gs等のAPIを利用する場合は、APIキーをGitHub Pagesに直書きせず、Cloudflare Workers / Vercel Functions等のプロキシ経由にしてください。
+        このHTML内の <code>fetchGasPrices()</code> を差し替えると、実価格表示に切り替えできます。
+      </p>
+    </section>
+  </main>
 
-      // 仮データ（あとで本物にする）
-      const stations = [
-        { name: "スタンドA", price: 160 },
-        { name: "スタンドB", price: 155 },
-        { name: "スタンドC", price: 162 }
-      ];
+<script>
+const statusEl = document.getElementById("status");
+const resultsEl = document.getElementById("results");
+const locBtn = document.getElementById("locBtn");
+const mapBtn = document.getElementById("mapBtn");
 
-      stations.sort((a,b)=>a.price-b.price);
+locBtn.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    statusEl.textContent = "このブラウザでは現在地取得が使えません。地名検索を使ってください。";
+    return;
+  }
 
-      stations.forEach(s => {
-        const li = document.createElement("li");
-        li.textContent = s.name + " : " + s.price + "円";
-        list.appendChild(li);
-      });
-    }
-  </script>
+  locBtn.disabled = true;
+  statusEl.textContent = "現在地を取得中です。ブラウザの位置情報を許可してください。";
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    statusEl.textContent = `現在地: ${lat.toFixed(5)}, ${lon.toFixed(5)}。近隣情報を検索しています。`;
+    await renderNearby(lat, lon);
+    locBtn.disabled = false;
+  }, () => {
+    statusEl.textContent = "現在地取得が許可されませんでした。地名を入力して地図で検索してください。";
+    locBtn.disabled = false;
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+});
+
+mapBtn.addEventListener("click", () => {
+  const q = document.getElementById("keyword").value.trim() || "近くのガソリンスタンド";
+  openMapSearch(q + " ガソリンスタンド");
+});
+
+async function renderNearby(lat, lon) {
+  resultsEl.innerHTML = "";
+
+  const prices = await fetchGasPrices(lat, lon);
+  if (prices && prices.length > 0) {
+    prices.sort((a, b) => Number(a.regular ?? 9999) - Number(b.regular ?? 9999));
+    prices.forEach(s => addStationCard(s));
+    return;
+  }
+
+  const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(lat + "," + lon + " 近くのガソリンスタンド")}`;
+  const gogoUrl = "https://www.gogo.gs/";
+
+  resultsEl.innerHTML = `
+    <div class="station">
+      <div class="station-head">
+        <div>
+          <div class="name">近隣ガソリンスタンド検索</div>
+          <div class="small">価格API未設定のため、地図検索と価格サイトへのリンクを表示しています。</div>
+          <span class="badge">現在地連動</span>
+        </div>
+        <div class="price">-- 円/L</div>
+      </div>
+      <p><a href="${mapUrl}" target="_blank" rel="noopener">Googleマップで近くのGSを開く</a></p>
+      <p><a href="${gogoUrl}" target="_blank" rel="noopener">gogo.gsで価格を確認する</a></p>
+    </div>`;
+}
+
+function addStationCard(s) {
+  const div = document.createElement("div");
+  div.className = "station";
+  div.innerHTML = `
+    <div class="station-head">
+      <div>
+        <div class="name">${escapeHtml(s.name || "名称不明")}</div>
+        <div class="small">${escapeHtml(s.address || "住所不明")}</div>
+        <span class="badge">${escapeHtml(s.brand || "GS")}</span>
+      </div>
+      <div class="price">${escapeHtml(s.regular ?? "-")} 円/L</div>
+    </div>
+    <div class="small">確認日: ${escapeHtml(s.checkedAt || "不明")}</div>`;
+  resultsEl.appendChild(div);
+}
+
+function openMapSearch(query) {
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(query)}`, "_blank");
+}
+
+// 実価格APIを使う場合はここを差し替えます。
+// 重要: APIキーをこのファイルに直接書かないでください。
+async function fetchGasPrices(lat, lon) {
+  // 例:
+  // const res = await fetch(`https://your-worker.example.com/gas?lat=${lat}&lon=${lon}`);
+  // if (!res.ok) return [];
+  // return await res.json();
+  return [];
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[c]));
+}
+</script>
 </body>
 </html>
